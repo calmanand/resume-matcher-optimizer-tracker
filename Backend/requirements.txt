@@ -1,0 +1,7 @@
+fastapi 
+uvicorn 
+python-dotenv 
+pymongo[srv]==3.11
+motor 
+passlib[bcrypt] 
+python-jose
