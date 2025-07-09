@@ -5,3 +5,4 @@ pymongo[srv]==3.11
 motor 
 passlib[bcrypt] 
 python-jose
+langchain_google_genai
