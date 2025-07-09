@@ -2,16 +2,21 @@ from fastapi import APIRouter, HTTPException, Query
 from database import resume_collection
 from datetime import datetime
 from bson import ObjectId
-from typing import List
+from typing import List, Union
 
 router = APIRouter()
 
 def serialize_resume(doc):
+    feedback = doc.get("aiFeedback", "")
+    # Ensure feedback is a list of clean lines
+    if isinstance(feedback, str):
+        feedback = [line.strip() for line in feedback.split("\n") if line.strip()]
+
     return {
         "id": str(doc.get("_id")),
         "email": doc.get("email"),
         "resumeUrl": doc.get("resumeUrl"),
-        "aiFeedback": doc.get("aiFeedback", ""),
+        "aiFeedback": feedback,
         "scores": doc.get("scores", {
             "skillScore": None,
             "tfidfScore": None,
@@ -24,7 +29,6 @@ def serialize_resume(doc):
 @router.get("/get-resumes")
 def get_resumes_for_email(email: str = Query(..., description="User email to fetch resumes")):
     try:
-        # Sort by scores.hybridScore descending (highest first)
         resumes_cursor = resume_collection.find({"email": email}).sort("scores.hybridScore", -1)
         resumes = list(resumes_cursor)
 

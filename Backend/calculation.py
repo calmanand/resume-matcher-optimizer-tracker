@@ -27,7 +27,8 @@ def extract_skills(text, skill_keywords):
 def tfidf_similarity(text1, text2):
     vectorizer = TfidfVectorizer()
     vectors = vectorizer.fit_transform([text1, text2])
-    cosine_sim = (vectors[0] @ vectors[1].T).A[0][0]
+    # (vectors[0] @ vectors[1].T) is a 1×1 sparse matrix; convert it to dense
+    cosine_sim = (vectors[0] @ vectors[1].T).toarray()[0][0]
     return cosine_sim * 100
 
 # BERT similarity

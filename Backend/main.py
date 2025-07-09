@@ -7,6 +7,10 @@ from uploads import router as resume_router
 
 app = FastAPI()
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 # CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
