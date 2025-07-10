@@ -6,7 +6,11 @@ import UploadView from './views/UploadView';
 import CompareView from './views/CompareView';
 import VersionsView from './views/VersionsView';
 import AuthView from './views/AuthView';
+import { Routes, Route, Navigate } from "react-router-dom";
 import ProfileView from './views/ProfileView';
+import Home from "./components/Home/Home";
+import LoginForm from "./components/Auth/LoginForm";
+import SignupForm from "./components/Auth/SignupForm";
 
 const AppContent = () => {
   const [currentView, setCurrentView] = React.useState('home');
@@ -84,7 +88,11 @@ const AppContent = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex flex-col">
       <Navbar onNavigate={setCurrentView} currentView={currentView} />
-      {renderView()}
+        <Routes>
+        <Route path='/' element={<Home />}/>
+        <Route path='/login' element={<LoginForm />}/>
+        <Route path='/signup' element={<SignupForm />}/>
+      </Routes>
       <Footer />
     </div>
   );
