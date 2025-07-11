@@ -1,100 +1,73 @@
 import React, { useState } from 'react';
-import FileUpload from '../components/FileUpload/FileUpload';
-import ScoreBreakdown from '../components/ScoreBreakdown/ScoreBreakdown';
-import SuggestionsPanel from '../components/SuggestionsPanel/SuggestionsPanel';
+import { axiosInstance } from '../lib/axios';
+import toast from 'react-hot-toast';
+import { useAuthStore } from '../store/useAuthStore';
 
 const UploadView = () => {
-  const [resumeData, setResumeData] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [jobDescription, setJobDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { authUser } = useAuthStore();
 
-  const handleFileUpload = async (file) => {
-    setIsAnalyzing(true);
+  const handleResumeChange = (e) => {
+    setResumeFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async () => {
+    if (!resumeFile || !jobDescription) {
+      return toast.error('Please upload resume and enter job description');
+    }
+
+    if (!authUser) {
+      return toast.error('You need to be logged in');
+    }
+
+    const formData = new FormData();
+    formData.append('resume', resumeFile);
+    formData.append('job_description', jobDescription);
+
+    setIsSubmitting(true);
     try {
-      // Simulate API call for resume analysis
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock analysis results
-      const mockAnalysis = {
-        overallScore: 78,
-        sections: {
-          content: { score: 85, feedback: "Strong content with relevant keywords" },
-          formatting: { score: 72, feedback: "Good structure, could improve spacing" },
-          skills: { score: 80, feedback: "Well-organized skills section" },
-          experience: { score: 75, feedback: "Good experience descriptions" }
-        },
-        suggestions: [
-          "Add more quantifiable achievements",
-          "Include industry-specific keywords",
-          "Improve action verb usage",
-          "Add a professional summary"
-        ]
-      };
-      
-      setResumeData(mockAnalysis);
-      setAnalysisComplete(true);
+      const res = await axiosInstance.post('/resume/analyze', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      toast.success('Resume analyzed successfully!');
+      console.log('Backend Response:', res.data);
+      // You can store or route with the result here
     } catch (error) {
-      console.error('Analysis failed:', error);
+      const message = error?.response?.data?.message || error.message || "Submission failed";
+      toast.error(message);
     } finally {
-      setIsAnalyzing(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Upload Your Resume
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Get instant feedback and suggestions to improve your resume and increase your chances of landing interviews.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* File Upload Section */}
-          <div className="lg:col-span-1">
-            <FileUpload 
-              onFileUpload={handleFileUpload}
-              isAnalyzing={isAnalyzing}
-            />
-          </div>
-
-          {/* Analysis Results */}
-          {analysisComplete && resumeData && (
-            <>
-              <div className="lg:col-span-1">
-                <ScoreBreakdown 
-                  overallScore={resumeData.overallScore}
-                  sections={resumeData.sections}
-                />
-              </div>
-              
-              <div className="lg:col-span-1">
-                <SuggestionsPanel 
-                  suggestions={resumeData.suggestions}
-                />
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Loading State */}
-        {isAnalyzing && (
-          <div className="text-center py-12">
-            <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-blue-600 transition ease-in-out duration-150">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Analyzing your resume...
-            </div>
-          </div>
-        )}
-      </div>
+    <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md mt-10">
+      <h2 className="text-2xl font-bold mb-4 text-center">Upload Resume and Job Description</h2>
+      <input 
+        type="file" 
+        accept=".pdf,.doc,.docx" 
+        onChange={handleResumeChange}
+        className="mb-4 w-full"
+      />
+      <textarea
+        placeholder="Paste job description here..."
+        value={jobDescription}
+        onChange={(e) => setJobDescription(e.target.value)}
+        rows={8}
+        className="w-full p-2 border rounded mb-4"
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={isSubmitting}
+        className={`w-full py-3 text-white font-semibold rounded ${isSubmitting ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
+      >
+        {isSubmitting ? 'Submitting...' : 'Submit'}
+      </button>
     </div>
   );
 };
 
-export default UploadView; 
+export default UploadView;

@@ -14,11 +14,12 @@ load_dotenv()
 # CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # or your frontend URL
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(auth_router, prefix="/auth")
 app.include_router(resume_router,prefix="/resume")
