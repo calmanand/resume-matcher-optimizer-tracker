@@ -49,14 +49,15 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  logout: async () => {
-    try {
-      await axiosInstance.post("/auth/logout");
-      set({ authUser: null });
-      toast.success("Logged out successfully");
-    } catch (error) {
-      const message = error?.response?.data?.message || error.message || "Logout failed";
-      toast.error(message);
-    }
-  },
+logout: async () => {
+  try {
+    await axiosInstance.post("/auth/logout");
+    set({ authUser: null });
+    toast.success("Logged out successfully");
+    window.location.href = "/login"; // <--- Redirect here
+  } catch (error) {
+    const message = error?.response?.data?.message || error.message || "Logout failed";
+    toast.error(message);
+  }
+},
 }));
