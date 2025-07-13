@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { axiosInstance } from '../lib/axios';
 
@@ -8,6 +8,28 @@ const HRDashboard = () => {
   const [topResumes, setTopResumes] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
+
+  const loadingMessages = [
+    "Please wait while we analyze your job description...",
+    "We are finding the best matches for you...",
+    "Just a moment, fetching top candidates...",
+    "Shortlisting the most relevant resumes...",
+    "Almost there! Finalizing the best picks..."
+  ];
+
+  useEffect(() => {
+    let interval;
+    if (isSubmitting) {
+      interval = setInterval(() => {
+        setLoadingMsgIndex((prev) => (prev + 1) % loadingMessages.length);
+      }, 5000);
+    } else {
+      setLoadingMsgIndex(0);
+    }
+
+    return () => clearInterval(interval);
+  }, [isSubmitting]);
 
   const testConnection = async () => {
     try {
@@ -29,15 +51,11 @@ const HRDashboard = () => {
 
     try {
       setIsSubmitting(true);
-      
-      // Create FormData to match the backend API expectation
       const formData = new FormData();
       formData.append('jd_text', jobDescription);
 
       const response = await axiosInstance.post('/hr/top-matches', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       setTopResumes(response.data.topResumes);
@@ -72,14 +90,9 @@ const HRDashboard = () => {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>HR Dashboard</h1>
-      <p style={styles.subtitle}>
-        Enter a job description to find the best matching resumes from our database.
-      </p>
-      <p style={styles.note}>
-        We provide the best CANDIDATES as per your requirement.
-      </p>
+      <p style={styles.subtitle}>Enter a job description to find the best matching resumes from our database.</p>
+      <p style={styles.note}>We provide the best CANDIDATES as per your requirement.</p>
 
-      {/* Connection Test Button */}
       <div style={styles.testContainer}>
         <button
           onClick={testConnection}
@@ -114,13 +127,26 @@ const HRDashboard = () => {
         {isSubmitting ? 'Analyzing...' : 'Find Best Matches'}
       </button>
 
+      {isSubmitting && (
+        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+          <img
+            src="https://i.gifer.com/ZZ5H.gif"
+            alt="Loading..."
+            style={{ width: '48px', marginBottom: '8px' }}
+          />
+          <p style={{ color: '#555', fontStyle: 'italic', transition: 'opacity 0.3s ease' }}>
+            {loadingMessages[loadingMsgIndex]}
+          </p>
+        </div>
+      )}
+
       {showResults && topResumes.length > 0 && (
         <div style={styles.resultsContainer}>
           <h2 style={styles.resultsTitle}>Top Matching Resumes</h2>
           <p style={styles.resultsSubtitle}>
             Found {topResumes.length} matching resumes for your job description
           </p>
-          
+
           <div style={styles.resumesList}>
             {topResumes.map((resume, index) => (
               <div key={resume.resumeId} style={styles.resumeCard}>
@@ -130,12 +156,10 @@ const HRDashboard = () => {
                   </h3>
                   <div style={styles.scoreContainer}>
                     <span style={styles.scoreLabel}>Overall Score:</span>
-                    <span 
-                      style={{
-                        ...styles.score,
-                        color: getScoreColor(resume.scores.hybridScore)
-                      }}
-                    >
+                    <span style={{
+                      ...styles.score,
+                      color: getScoreColor(resume.scores.hybridScore)
+                    }}>
                       {resume.scores.hybridScore.toFixed(1)}%
                     </span>
                     <span style={{
@@ -168,23 +192,21 @@ const HRDashboard = () => {
                   </div>
                 </div>
 
-                {resume.matchedSkills && resume.matchedSkills.length > 0 && (
+                {resume.matchedSkills?.length > 0 && (
                   <div style={styles.skillsContainer}>
                     <h4 style={styles.skillsTitle}>Matched Skills:</h4>
                     <div style={styles.skillsList}>
-                      {resume.matchedSkills.map((skill, skillIndex) => (
-                        <span key={skillIndex} style={styles.skillTag}>
-                          {skill}
-                        </span>
+                      {resume.matchedSkills.map((skill, idx) => (
+                        <span key={idx} style={styles.skillTag}>{skill}</span>
                       ))}
                     </div>
                   </div>
                 )}
 
                 <div style={styles.resumeActions}>
-                  <a 
-                    href={resume.resumeUrl} 
-                    target="_blank" 
+                  <a
+                    href={resume.resumeUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     style={styles.viewButton}
                   >
@@ -217,174 +239,34 @@ const styles = {
     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
     fontFamily: 'Arial, sans-serif',
   },
-  title: {
-    fontSize: '28px',
-    color: '#2e7d32',
-    marginBottom: '10px',
-    textAlign: 'center',
-  },
-  subtitle: {
-    color: '#444',
-    fontSize: '16px',
-    marginBottom: '10px',
-    textAlign: 'center',
-  },
-  note: {
-    color: '#2e7d32',
-    fontSize: '15px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-    textAlign: 'center',
-  },
-  testContainer: {
-    textAlign: 'center',
-    marginBottom: '20px',
-  },
-  testButton: {
-    padding: '8px 16px',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '500',
-    transition: 'background-color 0.3s ease',
-  },
-  textarea: {
-    width: '100%',
-    padding: '12px',
-    borderRadius: '6px',
-    border: '1px solid #a5d6a7',
-    fontSize: '14px',
-    resize: 'vertical',
-    marginBottom: '20px',
-  },
-  button: {
-    padding: '12px 24px',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    fontWeight: 'bold',
-    fontSize: '16px',
-    transition: 'background-color 0.3s ease',
-    display: 'block',
-    margin: '0 auto 30px',
-  },
-  resultsContainer: {
-    marginTop: '30px',
-  },
-  resultsTitle: {
-    fontSize: '24px',
-    color: '#2e7d32',
-    marginBottom: '10px',
-    textAlign: 'center',
-  },
-  resultsSubtitle: {
-    color: '#666',
-    fontSize: '16px',
-    marginBottom: '30px',
-    textAlign: 'center',
-  },
-  resumesList: {
-    display: 'grid',
-    gap: '20px',
-  },
-  resumeCard: {
-    border: '1px solid #e0e0e0',
-    borderRadius: '8px',
-    padding: '20px',
-    backgroundColor: '#fafafa',
-    transition: 'box-shadow 0.3s ease',
-  },
-  resumeHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '15px',
-    flexWrap: 'wrap',
-    gap: '10px',
-  },
-  resumeTitle: {
-    fontSize: '18px',
-    color: '#333',
-    margin: 0,
-  },
-  scoreContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  scoreLabel: {
-    fontSize: '14px',
-    color: '#666',
-  },
-  score: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-  },
-  scoresGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-    gap: '15px',
-    marginBottom: '15px',
-  },
-  scoreItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '8px 12px',
-    backgroundColor: '#fff',
-    borderRadius: '4px',
-    border: '1px solid #e0e0e0',
-  },
-  scoreName: {
-    fontSize: '14px',
-    color: '#666',
-  },
-  scoreValue: {
-    fontSize: '14px',
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  skillsContainer: {
-    marginBottom: '15px',
-  },
-  skillsTitle: {
-    fontSize: '16px',
-    color: '#333',
-    marginBottom: '8px',
-  },
-  skillsList: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '8px',
-  },
-  skillTag: {
-    backgroundColor: '#e8f5e8',
-    color: '#2e7d32',
-    padding: '4px 8px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '500',
-  },
-  resumeActions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-  },
-  viewButton: {
-    backgroundColor: '#2196f3',
-    color: '#fff',
-    padding: '8px 16px',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    fontSize: '14px',
-    fontWeight: '500',
-    transition: 'background-color 0.3s ease',
-  },
-  noResults: {
-    textAlign: 'center',
-    padding: '40px',
-    color: '#666',
-  },
+  title: { fontSize: '28px', color: '#2e7d32', marginBottom: '10px', textAlign: 'center' },
+  subtitle: { color: '#444', fontSize: '16px', marginBottom: '10px', textAlign: 'center' },
+  note: { color: '#2e7d32', fontSize: '15px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' },
+  testContainer: { textAlign: 'center', marginBottom: '20px' },
+  testButton: { padding: '8px 16px', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '500' },
+  textarea: { width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #a5d6a7', fontSize: '14px', resize: 'vertical', marginBottom: '20px' },
+  button: { padding: '12px 24px', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', fontSize: '16px', transition: 'background-color 0.3s ease', display: 'block', margin: '0 auto 30px' },
+  resultsContainer: { marginTop: '30px' },
+  resultsTitle: { fontSize: '24px', color: '#2e7d32', marginBottom: '10px', textAlign: 'center' },
+  resultsSubtitle: { color: '#666', fontSize: '16px', marginBottom: '30px', textAlign: 'center' },
+  resumesList: { display: 'grid', gap: '20px' },
+  resumeCard: { border: '1px solid #e0e0e0', borderRadius: '8px', padding: '20px', backgroundColor: '#fafafa' },
+  resumeHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' },
+  resumeTitle: { fontSize: '18px', color: '#333', margin: 0 },
+  scoreContainer: { display: 'flex', alignItems: 'center', gap: '8px' },
+  scoreLabel: { fontSize: '14px', color: '#666' },
+  score: { fontSize: '18px', fontWeight: 'bold' },
+  scoresGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', marginBottom: '15px' },
+  scoreItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', backgroundColor: '#fff', borderRadius: '4px', border: '1px solid #e0e0e0' },
+  scoreName: { fontSize: '14px', color: '#666' },
+  scoreValue: { fontSize: '14px', fontWeight: 'bold', color: '#333' },
+  skillsContainer: { marginBottom: '15px' },
+  skillsTitle: { fontSize: '16px', color: '#333', marginBottom: '8px' },
+  skillsList: { display: 'flex', flexWrap: 'wrap', gap: '8px' },
+  skillTag: { backgroundColor: '#e8f5e8', color: '#2e7d32', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '500' },
+  resumeActions: { display: 'flex', justifyContent: 'flex-end' },
+  viewButton: { backgroundColor: '#2196f3', color: '#fff', padding: '8px 16px', borderRadius: '4px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' },
+  noResults: { textAlign: 'center', padding: '40px', color: '#666' },
 };
 
 export default HRDashboard;

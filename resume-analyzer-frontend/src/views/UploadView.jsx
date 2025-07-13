@@ -13,11 +13,11 @@ const UploadView = () => {
   const navigate = useNavigate();
   const { logout, authUser } = useAuthStore();
 
-  const demoJD = `We are seeking a full-stack developer with experience in React, Node.js, and cloud services like AWS. Knowledge of Docker and CI/CD pipelines is a plus.`;
+  const demoJD = `We are looking for a passionate JavaScript Developer Intern to join our front-end engineering team focused on building modern, responsive web applications. The ideal candidate should have experience with JavaScript, HTML, CSS, and working knowledge of front-end libraries like React or Vue. You will contribute to developing interactive dashboards, integrating RESTful APIs, and optimizing user interfaces for performance and accessibility. Familiarity with Git, basic DevOps (e.g., Docker), and working in agile teams is preferred. Candidates with experience in design systems, browser rendering optimization, or JavaScript testing frameworks (Jest, Cypress) will have an edge. This is a remote role with opportunities to work on real-world client projects and grow under experienced mentorship. are seeking a highly motivated MERN intern  with hands-on experience  fine-tuning,Candidates with proven project work on GitHub and a strong foundation in machine learning, computer vision, and backend systems will be preferred. This is a remote internship with opportunities for mentorship, certification, and full-time conversion..`;
 
   const handleUseDemo = async () => {
     try {
-      const res = await fetch('/demo_resume.pdf');
+      const res = await fetch('/demoResume.pdf');
       const blob = await res.blob();
       const file = new File([blob], 'demo_resume.pdf', { type: 'application/pdf' });
       setResumeFile(file);

@@ -1,42 +1,47 @@
-# ai_feedback.py - Simplified version without Google AI dependency
-
 def generate_feedback(resume_text, analysis_results):
     """
-    Generate feedback based on analysis results without external AI
+    AI-like dynamic feedback generator: fully natural, no rigid conditionals.
     """
-    feedback = []
-    
-    # Skill-based feedback
-    if analysis_results.get("skillScore", 0) < 50:
-        feedback.append("⚠️ Low skill match. Consider highlighting more relevant skills in your resume.")
-    
-    if analysis_results.get("missingSkills"):
-        missing_skills = analysis_results["missingSkills"]
-        if len(missing_skills) > 0:
-            feedback.append(f"📝 Consider adding these skills: {', '.join(missing_skills[:5])}")
-    
-    # Overall score feedback
+
+    skill_score = analysis_results.get("skillScore", 0)
     hybrid_score = analysis_results.get("hybridScore", 0)
-    if hybrid_score >= 80:
-        feedback.append("🎉 Excellent match! Your resume aligns well with the job requirements.")
-    elif hybrid_score >= 60:
-        feedback.append("👍 Good match. Your resume shows potential but could be improved.")
-    else:
-        feedback.append("📋 Fair match. Consider tailoring your resume more to the job description.")
-    
-    # Content suggestions
-    if len(resume_text.split()) < 200:
-        feedback.append("📄 Your resume seems brief. Consider adding more details about your experience.")
-    
-    # Format suggestions
-    if "experience" not in resume_text.lower():
-        feedback.append("💼 Consider adding a detailed experience section.")
-    
-    if "education" not in resume_text.lower():
-        feedback.append("🎓 Consider adding your educational background.")
-    
+    missing_skills = analysis_results.get("missingSkills", [])
+    resume_length = len(resume_text.split())
+
+    # Build a base context for the AI-style message
+    feedback_text = (
+        f"Based on the resume analysis, the skill relevance score was calculated at {skill_score}% and the overall compatibility "
+        f"(hybrid) score at {hybrid_score}%. These metrics offer insight into how well the resume content aligns with the technical "
+        f"requirements and expectations of the provided job description. "
+    )
+
+    if missing_skills:
+        feedback_text += (
+            f"The analysis identified some potential gaps in technical alignment. In particular, the following skills were not detected in the resume "
+            f"but are relevant to the job: {', '.join(missing_skills[:5])}. Introducing or expanding upon these skills, especially within project summaries or work experience, "
+            f"can enhance relevance."
+        )
+
+    feedback_text += " "
+
+    feedback_text += (
+        "From a content perspective, the resume "
+        f"{'is concise and may benefit from further elaboration' if resume_length < 200 else 'contains a fair amount of information, which provides useful context to the reviewer'}. "
+    )
+
+    feedback_text += (
+        f"Structurally, it's important that key sections such as 'Experience' and 'Education' are clearly included. "
+        f"{'If missing, they should be added to demonstrate both formal background and applied skills. ' if ('experience' not in resume_text.lower() or 'education' not in resume_text.lower()) else ''}"
+    )
+
+    feedback_text += (
+        "Overall, the resume shows "
+        f"{'a limited match' if hybrid_score < 50 else 'moderate alignment' if hybrid_score < 80 else 'a strong degree of relevance'} to the target role. "
+        "With targeted improvements in terminology, measurable outcomes, and skill framing, the resume can be optimized to better communicate technical capabilities and role fit."
+    )
+
     return {
-        "feedback": feedback,
+        "feedback": [feedback_text],
         "overallScore": hybrid_score,
-        "recommendations": len(feedback)
+        "recommendations": 1
     }
