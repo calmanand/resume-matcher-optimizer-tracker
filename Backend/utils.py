@@ -20,7 +20,9 @@ def generate_token(user_id: str):
         "user_id": user_id,
         "exp": datetime.utcnow() + timedelta(days=7)
     }
-    return jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
+    # Use a default secret key if not provided in environment
+    secret_key = os.getenv("JWT_SECRET", "your-secret-key-here-change-in-production")
+    return jwt.encode(payload, secret_key, algorithm="HS256")
 
 # PDF Upload to Cloudinary (unsigned)
 def upload_pdf_to_cloudinary(file):

@@ -30,9 +30,22 @@ async def signup(user: UserCreate, res: Response):
     user_id = str(result.inserted_id)
 
     token = generate_token(user_id)
-    res.set_cookie(key="jwt", value=token, httponly=True, secure=True, samesite="none", max_age=7*24*60*60)
+    # Fix cookie settings for development
+    res.set_cookie(
+        key="jwt", 
+        value=token, 
+        httponly=True, 
+        secure=False,  # Set to False for HTTP development
+        samesite="lax",  # Changed from "none" to "lax"
+        max_age=7*24*60*60
+    )
 
-    return {**new_user, "_id": user_id}
+    # Return user data without password
+    return {
+        "_id": user_id,
+        "fullName": user.fullName,
+        "email": user.email
+    }
 
 @router.post("/login", response_model=UserOut)
 async def login(user: UserLogin, res: Response):
@@ -41,7 +54,15 @@ async def login(user: UserLogin, res: Response):
         raise HTTPException(status_code=400, detail="The credentials are wrong")
 
     token = generate_token(str(db_user["_id"]))
-    res.set_cookie(key="jwt", value=token, httponly=True, secure=True, samesite="none", max_age=7*24*60*60)
+    # Fix cookie settings for development
+    res.set_cookie(
+        key="jwt", 
+        value=token, 
+        httponly=True, 
+        secure=False,  # Set to False for HTTP development
+        samesite="lax",  # Changed from "none" to "lax"
+        max_age=7*24*60*60
+    )
 
     return {
         "_id": str(db_user["_id"]),
@@ -61,7 +82,9 @@ async def check_auth(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     try:
-        payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+        # Use a default secret key if not provided in environment
+        secret_key = os.getenv("JWT_SECRET", "your-secret-key-here-change-in-production")
+        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
         user_id = payload.get("user_id")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -76,8 +99,12 @@ async def check_auth(request: Request):
             "email": user["email"]
         }
 
-    except JWTError:
+    except JWTError as e:
+        print(f"JWT Error: {e}")
         raise HTTPException(status_code=401, detail="Token is invalid or expired")
+    except Exception as e:
+        print(f"Unexpected error in check_auth: {e}")
+        raise HTTPException(status_code=401, detail="Authentication error")
     
 
 

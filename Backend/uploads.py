@@ -60,12 +60,8 @@ async def upload_and_analyze_resume(
         resume_text = analysis.get("resumeText", "")
 
         feedback = generate_feedback(
-            jd=jd_text,
             resume_text=resume_text,
-            matched_skills=", ".join(analysis["matchedSkills"]),
-            tfidf_score=analysis["tfidfScore"] / 100,
-            bert_score=analysis["bertScore"] / 100,
-            hybrid_score=analysis["hybridScore"] / 100,
+            analysis_results=analysis
         )
 
         analysis["aiFeedback"] = feedback
@@ -119,12 +115,8 @@ def analyze_guest_resume():
 
         # 5. Generate AI feedback
         feedback = generate_feedback(
-            jd=jd_text,
             resume_text=resume_text,
-            matched_skills=", ".join(analysis["matchedSkills"]),
-            tfidf_score=analysis["tfidfScore"] / 100,
-            bert_score=analysis["bertScore"] / 100,
-            hybrid_score=analysis["hybridScore"] / 100,
+            analysis_results=analysis
         )
         analysis["aiFeedback"] = feedback
 

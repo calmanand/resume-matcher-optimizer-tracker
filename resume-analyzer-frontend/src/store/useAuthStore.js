@@ -15,6 +15,7 @@ export const useAuthStore = create((set) => ({
       const res = await axiosInstance.get("/auth/check-auth");
       set({ authUser: res.data });
     } catch (error) {
+      console.log("Auth check failed:", error.response?.status);
       set({ authUser: null });
     } finally {
       set({ isCheckingAuth: false });
@@ -28,8 +29,9 @@ export const useAuthStore = create((set) => ({
       set({ authUser: res.data });
       toast.success("Account created successfully");
     } catch (error) {
-      const message = error?.response?.data?.message || error.message || "Signup failed";
+      const message = error?.response?.data?.detail || error?.response?.data?.message || error.message || "Signup failed";
       toast.error(message);
+      throw error; // Re-throw to let the form handle it
     } finally {
       set({ isSigningUp: false });
     }
@@ -42,22 +44,23 @@ export const useAuthStore = create((set) => ({
       set({ authUser: res.data });
       toast.success("Logged in successfully");
     } catch (error) {
-      const message = error?.response?.data?.message || error.message || "Login failed";
+      const message = error?.response?.data?.detail || error?.response?.data?.message || error.message || "Login failed";
       toast.error(message);
+      throw error; // Re-throw to let the form handle it
     } finally {
       set({ isLoggingIn: false });
     }
   },
 
-logout: async () => {
-  try {
-    await axiosInstance.post("/auth/logout");
-    set({ authUser: null });
-    toast.success("Logged out successfully");
-    window.location.href = "/login"; // <--- Redirect here
-  } catch (error) {
-    const message = error?.response?.data?.message || error.message || "Logout failed";
-    toast.error(message);
-  }
-},
+  logout: async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+      set({ authUser: null });
+      toast.success("Logged out successfully");
+      window.location.href = "/login"; // <--- Redirect here
+    } catch (error) {
+      const message = error?.response?.data?.detail || error?.response?.data?.message || error.message || "Logout failed";
+      toast.error(message);
+    }
+  },
 }));

@@ -20,6 +20,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"message": "Resume Analyzer Backend is running!"}
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "message": "Backend is operational",
+        "jwt_secret_configured": bool(os.getenv("JWT_SECRET"))
+    }
 
 app.include_router(auth_router, prefix="/auth")
 app.include_router(resume_router,prefix="/resume")

@@ -1,33 +1,42 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
-import os
+# ai_feedback.py - Simplified version without Google AI dependency
 
-# instantiate once
-_model = ChatGoogleGenerativeAI(model=os.getenv("GENAI_MODEL", "gemini-2.5-flash"))
-
-def generate_feedback(jd: str, resume_text: str, matched_skills: str,
-                      tfidf_score: float, bert_score: float, hybrid_score: float) -> str:
-    prompt = f"""
-You are an expert AI resume reviewer helping job seekers improve their resumes.
-
-## Job Description (JD):
-{jd}
-
-## Resume Content:
-{resume_text}
-
-## Matching Insights:
-- Matched Skills: {matched_skills}
-- Overall Match Score: {hybrid_score} (internal use only)
-
-Please write a short feedback (4 to 6 lines) covering the following:
-- Mention any important skills missing from the resume (from the JD)
-- Comment on whether the resume demonstrates enough project experience or relevant action
-- If writing or phrasing is weak, suggest improvement
-- Conclude with a general statement about the resume's overall alignment with the job, using simple language
-- Avoid any mention of scores like TF-IDF, BERT, or Hybrid — just explain what needs improvement in a way the candidate can understand
-
-Avoid formatting like bullet points, bold text, or headings.
-Respond in plain text. Do not repeat the same ideas.
-"""
-    result = _model.invoke(prompt)
-    return result.content
+def generate_feedback(resume_text, analysis_results):
+    """
+    Generate feedback based on analysis results without external AI
+    """
+    feedback = []
+    
+    # Skill-based feedback
+    if analysis_results.get("skillScore", 0) < 50:
+        feedback.append("⚠️ Low skill match. Consider highlighting more relevant skills in your resume.")
+    
+    if analysis_results.get("missingSkills"):
+        missing_skills = analysis_results["missingSkills"]
+        if len(missing_skills) > 0:
+            feedback.append(f"📝 Consider adding these skills: {', '.join(missing_skills[:5])}")
+    
+    # Overall score feedback
+    hybrid_score = analysis_results.get("hybridScore", 0)
+    if hybrid_score >= 80:
+        feedback.append("🎉 Excellent match! Your resume aligns well with the job requirements.")
+    elif hybrid_score >= 60:
+        feedback.append("👍 Good match. Your resume shows potential but could be improved.")
+    else:
+        feedback.append("📋 Fair match. Consider tailoring your resume more to the job description.")
+    
+    # Content suggestions
+    if len(resume_text.split()) < 200:
+        feedback.append("📄 Your resume seems brief. Consider adding more details about your experience.")
+    
+    # Format suggestions
+    if "experience" not in resume_text.lower():
+        feedback.append("💼 Consider adding a detailed experience section.")
+    
+    if "education" not in resume_text.lower():
+        feedback.append("🎓 Consider adding your educational background.")
+    
+    return {
+        "feedback": feedback,
+        "overallScore": hybrid_score,
+        "recommendations": len(feedback)
+    }

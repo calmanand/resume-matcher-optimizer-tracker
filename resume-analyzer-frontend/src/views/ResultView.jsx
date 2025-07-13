@@ -10,9 +10,21 @@ const ResultView = () => {
   const hybridScore = resultData?.hybridScore ?? resultData?.scores?.hybridScore ?? 0;
   const skillScore = resultData?.skillScore ?? resultData?.scores?.skillScore ?? null;
   const bertScore = resultData?.bertScore ?? resultData?.scores?.bertScore ?? null;
-  const aiFeedback = Array.isArray(resultData?.aiFeedback)
-    ? resultData.aiFeedback.join(' ')
-    : resultData?.aiFeedback?.trim();
+  
+  // Handle aiFeedback - it can be an object with feedback array or a string
+  let aiFeedback = '';
+  if (resultData?.aiFeedback) {
+    if (typeof resultData.aiFeedback === 'object' && resultData.aiFeedback.feedback) {
+      // New format: object with feedback array
+      aiFeedback = resultData.aiFeedback.feedback.join('\n');
+    } else if (Array.isArray(resultData.aiFeedback)) {
+      // Array format
+      aiFeedback = resultData.aiFeedback.join('\n');
+    } else if (typeof resultData.aiFeedback === 'string') {
+      // String format
+      aiFeedback = resultData.aiFeedback.trim();
+    }
+  }
 
   let feedbackText = '';
   if (hybridScore <= 40) feedbackText = 'Poor Match';
@@ -57,7 +69,11 @@ const ResultView = () => {
         <strong>AI Suggestions:</strong>
         <div style={styles.feedbackBox}>
           {aiFeedback ? (
-            <p style={styles.feedbackItem}>{aiFeedback}</p>
+            <div>
+              {aiFeedback.split('\n').map((feedback, index) => (
+                <p key={index} style={styles.feedbackItem}>{feedback}</p>
+              ))}
+            </div>
           ) : (
             <div style={{ fontStyle: 'italic', color: '#888' }}>
               No AI suggestions available.
