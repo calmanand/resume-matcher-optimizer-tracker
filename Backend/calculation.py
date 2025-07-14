@@ -4,16 +4,19 @@ from io import BytesIO
 import fitz  # PyMuPDF
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+from sentence_transformers import SentenceTransformer, util
 
-# Load NLP models
+# Load spaCy NLP model
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
     print("⚠️ spaCy model not found. Please run: python -m spacy download en_core_web_sm")
     nlp = None
 
-# Download and extract PDF text
+# Load BERT model
+bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+# Extract text from PDF URL
 def extract_text_from_url(pdf_url):
     try:
         response = requests.get(pdf_url, timeout=30)
@@ -31,10 +34,9 @@ def extract_text_from_url(pdf_url):
     except Exception as e:
         raise Exception(f"Error extracting text from PDF: {str(e)}")
 
-# Skill extractor
+# Extract skills from text
 def extract_skills(text, skill_keywords):
     if not nlp:
-        # Fallback to simple word matching if spaCy is not available
         text_lower = text.lower()
         return {skill for skill in skill_keywords if skill.lower() in text_lower}
     
@@ -43,7 +45,6 @@ def extract_skills(text, skill_keywords):
         return {token.text for token in doc if token.text in skill_keywords}
     except Exception as e:
         print(f"⚠️ Error in skill extraction: {e}")
-        # Fallback to simple word matching
         text_lower = text.lower()
         return {skill for skill in skill_keywords if skill.lower() in text_lower}
 
@@ -52,35 +53,27 @@ def tfidf_similarity(text1, text2):
     try:
         if not text1.strip() or not text2.strip():
             return 0.0
-            
         vectorizer = TfidfVectorizer()
         vectors = vectorizer.fit_transform([text1, text2])
-        # Calculate cosine similarity
         cosine_sim = cosine_similarity(vectors[0:1], vectors[1:2])[0][0]
         return cosine_sim * 100
     except Exception as e:
         print(f"⚠️ Error in TF-IDF similarity: {e}")
         return 0.0
 
-# Simple text similarity (replacement for BERT)
-def simple_similarity(text1, text2):
+# BERT-based semantic similarity
+def bert_similarity(text1, text2):
     try:
-        # Simple word overlap similarity
-        words1 = set(text1.lower().split())
-        words2 = set(text2.lower().split())
-        
-        if not words1 or not words2:
-            return 0
-        
-        intersection = words1.intersection(words2)
-        union = words1.union(words2)
-        
-        return (len(intersection) / len(union)) * 100
+        if not text1.strip() or not text2.strip():
+            return 0.0
+        embeddings = bert_model.encode([text1, text2], convert_to_tensor=True)
+        similarity = util.pytorch_cos_sim(embeddings[0], embeddings[1]).item()
+        return similarity * 100
     except Exception as e:
-        print(f"⚠️ Error in simple similarity: {e}")
+        print(f"⚠️ Error in BERT similarity: {e}")
         return 0.0
 
-# Skill match scoring
+# Skill match score
 def skill_match_score(resume_skills, jd_skills):
     try:
         if not jd_skills:
@@ -91,64 +84,22 @@ def skill_match_score(resume_skills, jd_skills):
         print(f"⚠️ Error in skill match scoring: {e}")
         return 0.0
 
-# Final hybrid score
-def hybrid_score(skill_score, tfidf_score, simple_score, weights=(0.4, 0.3, 0.3)):
+# Hybrid score using BERT instead of simple similarity
+def hybrid_score(skill_score, tfidf_score, bert_score, weights=(0.4, 0.3, 0.3)):
     try:
-        return round(weights[0]*skill_score + weights[1]*tfidf_score + weights[2]*simple_score, 2)
+        return round(weights[0]*skill_score + weights[1]*tfidf_score + weights[2]*bert_score, 2)
     except Exception as e:
         print(f"⚠️ Error in hybrid scoring: {e}")
         return 0.0
 
-# Keywords used for skill extraction
+# Predefined skill keywords (shortened here for brevity; use full list in production)
 skill_keywords = {
-    # Programming Languages
-    "python", "java", "c", "c++", "c#", "javascript", "js", "typescript", "ts", "ruby", "go", "golang", "rust",
-    "bash", "shell", "powershell", "r", "swift", "kotlin", "objective-c", "perl", "matlab", "scala",
-
-    # Data Science / ML / AI
-    "numpy", "pandas", "matplotlib", "seaborn", "scikit-learn", "sklearn", "tensorflow", "keras", "pytorch", "openai", 
-    "huggingface", "transformers", "xgboost", "lightgbm", "catboost", "nltk", "spacy", "statsmodels", "mlflow", 
-    "opencv", "cv2", "jupyter", "jupyter notebook", "colab", "google colab",
-
-    # Database / Data Engineering
-    "sql", "mysql", "postgresql", "postgres", "sqlite", "mssql", "oracle", "mongodb", "mongo", "firebase", 
-    "bigquery", "snowflake", "redis", "cassandra", "elasticsearch", "dynamodb", "neo4j", "graph database",
-
-    # Web Dev - Frontend
-    "html", "css", "scss", "sass", "tailwind", "tailwind css", "bootstrap", "material ui", "mui", 
-    "react", "react.js", "reactjs", "next.js", "nextjs", "vue", "vue.js", "angular", "angular.js", "jquery",
-
-    # Web Dev - Backend
-    "node.js", "nodejs", "express", "express.js", "fastapi", "flask", "django", "spring", "spring boot",
-    "nest.js", "nestjs", "graphql", "rest", "rest api", "restful api", "axios", "rpc", "grpc", 
-
-    # DevOps / Tools / Infra
-    "git", "github", "gitlab", "bitbucket", "ci/cd", "jenkins", "docker", "docker-compose", "kubernetes", "k8s",
-    "terraform", "ansible", "prometheus", "grafana", "nginx", "apache", "linux", "ubuntu", "wsl", "zsh", "vim", 
-    "vs code", "vscode", "terminal", "shell scripting",
-
-    # Cloud
-    "aws", "azure", "gcp", "google cloud", "heroku", "cloudinary", "netlify", "vercel",
-
-    # Networking & Security
-    "tcp/ip", "udp", "arp", "http", "https", "dns", "ip addressing", "ip", "routing", "subnetting", 
-    "osi model", "bgp", "ospf", "icmp", "vpn", "firewall", "ssl", "tls", "md5", "sha256", "encryption", 
-    "cybersecurity", "ethical hacking",
-
-    # Realtime / Integration
-    "socket.io", "websocket", "mqtt", "rabbitmq", "kafka", "cron", "webhooks", "api gateway", "fuse.js",
-
-    # Tools / Miscellaneous
-    "postman", "swagger", "openapi", "jira", "figma", "canva", "notion", "draw.io", "miro", 
-    "excel", "power bi", "tableau", "looker", "datastudio", 
-
-    # Soft Skills
-    "communication", "leadership", "problem solving", "teamwork", "collaboration", 
-    "critical thinking", "analytical thinking", "adaptability", "time management", 
-    "creativity", "attention to detail"
+    "python", "java", "c++", "sql", "react", "node.js", "django", "flask", "html", "css",
+    "tensorflow", "keras", "pytorch", "mongodb", "git", "docker", "aws", "azure", "linux",
+    "communication", "leadership", "problem solving", "teamwork"
 }
 
-# 🎯 Final function you call
+# 🔍 Main analysis function
 def analyze_resume_against_jd(resume_url, jd_text):
     try:
         resume_text = extract_text_from_url(resume_url)
@@ -157,8 +108,8 @@ def analyze_resume_against_jd(resume_url, jd_text):
 
         skill_score = skill_match_score(resume_skills, jd_skills)
         tfidf_score = tfidf_similarity(resume_text, jd_text)
-        simple_score = simple_similarity(resume_text, jd_text)
-        final_score = hybrid_score(skill_score, tfidf_score, simple_score)
+        bert_score = bert_similarity(resume_text, jd_text)
+        final_score = hybrid_score(skill_score, tfidf_score, bert_score)
 
         return {
             "resumeSkills": sorted(resume_skills),
@@ -167,12 +118,11 @@ def analyze_resume_against_jd(resume_url, jd_text):
             "missingSkills": sorted(jd_skills - resume_skills),
             "skillScore": round(skill_score, 2),
             "tfidfScore": round(tfidf_score, 2),
-            "bertScore": round(simple_score, 2),  # Keep same key for compatibility
+            "bertScore": round(bert_score, 2),
             "hybridScore": final_score
         }
     except Exception as e:
         print(f"❌ Error in resume analysis: {str(e)}")
-        # Return default values on error
         return {
             "resumeSkills": [],
             "jdSkills": [],
