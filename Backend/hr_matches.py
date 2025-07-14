@@ -1,4 +1,3 @@
-# hr_matches.py
 from fastapi import APIRouter, Form, HTTPException
 from database import resume_collection
 from calculation import extract_text_from_url, analyze_resume_against_jd
@@ -9,66 +8,51 @@ router = APIRouter()
 @router.post("/top-matches")
 async def get_top_matching_resumes(jd_text: str = Form(...)):
     try:
-        # Fetch all stored resumes
         resumes = list(resume_collection.find({}, {"resumeUrl": 1, "email": 1, "_id": 1}))
-        
         if not resumes:
-            return {
-                "message": "No resumes available in database",
-                "jd": jd_text,
-                "count": 0,
-                "topResumes": []
-            }
+            raise HTTPException(status_code=404, detail="No resumes available in database.")
 
-        scored_resumes = []
-        processed_count = 0
+        email_to_best_resume = {}
 
         for resume in resumes:
             try:
-                resume_url = resume.get("resumeUrl")
-                if not resume_url:
-                    print(f"⚠️ Skipping resume {resume.get('_id')}: No URL found")
-                    continue
+                resume_url = resume["resumeUrl"]
+                email = resume["email"]
 
-                # Analyze match between HR JD and current resume
+                # Analyze resume against JD
                 analysis = analyze_resume_against_jd(resume_url=resume_url, jd_text=jd_text)
 
-                scored_resumes.append({
+                current_resume_data = {
                     "resumeId": str(resume["_id"]),
-                    "email": resume.get("email", "Unknown"),
+                    "email": email,
                     "resumeUrl": resume_url,
-                    "matchedSkills": analysis.get("matchedSkills", []),
+                    "matchedSkills": analysis["matchedSkills"],
                     "scores": {
-                        "skillScore": analysis.get("skillScore", 0),
-                        "tfidfScore": analysis.get("tfidfScore", 0),
-                        "bertScore": analysis.get("bertScore", 0),
-                        "hybridScore": analysis.get("hybridScore", 0)
+                        "skillScore": analysis["skillScore"],
+                        "tfidfScore": analysis["tfidfScore"],
+                        "bertScore": analysis["bertScore"],
+                        "hybridScore": analysis["hybridScore"]
                     }
-                })
-                processed_count += 1
+                }
+
+                # If email not in dict or this resume has a better score, store it
+                if email not in email_to_best_resume or \
+                   analysis["hybridScore"] > email_to_best_resume[email]["scores"]["hybridScore"]:
+                    email_to_best_resume[email] = current_resume_data
 
             except Exception as e:
                 print(f"⚠️ Skipping resume {resume.get('_id')}: {e}")
                 continue
 
-        if not scored_resumes:
-            return {
-                "message": "No valid resumes could be processed",
-                "jd": jd_text,
-                "count": 0,
-                "topResumes": []
-            }
-
-        # Sort by hybrid score and get top 10
-        top_resumes = sorted(scored_resumes, key=lambda x: x["scores"]["hybridScore"], reverse=True)[:10]
+        # Extract values and sort by hybridScore descending
+        top_resumes = sorted(email_to_best_resume.values(), key=lambda x: x["scores"]["hybridScore"], reverse=True)[:10]
 
         return {
-            "message": f"Top matching resumes retrieved (processed {processed_count} resumes)",
+            "message": "Top matching resumes retrieved",
             "jd": jd_text,
             "count": len(top_resumes),
             "topResumes": top_resumes
         }
 
     except Exception as e:
-        print(f"❌ Error in HR matches: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error matching resumes: {str(e)}")
