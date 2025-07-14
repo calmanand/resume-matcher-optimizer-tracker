@@ -101,14 +101,51 @@ def hybrid_score(skill_score, tfidf_score, simple_score, weights=(0.4, 0.3, 0.3)
 
 # Keywords used for skill extraction
 skill_keywords = {
-    "python", "java", "c", "c++", "c#", "javascript", "typescript", "ruby", "go", "rust", "bash", "shell",
-    "numpy", "pandas", "matplotlib", "scikit-learn", "tensorflow", "keras", "seaborn", "excel", "sql",
-    "html", "css", "tailwind css", "react", "angular", "vue", "express", "node.js", "next.js", "mongo", "mongodb",
-    "django", "flask", "fastapi", "rest", "restful api", "graphql", "axios", "mongoose",
-    "git", "github", "postman", "linux", "wsl", "docker", "kubernetes", "vim", "vs code", "firebase", "aws", "azure",
-    "tcp/ip", "udp", "arp", "routing", "osi model", "bgp", "md5", "multicast", "http", "dns", "ip addressing",
-    "socket.io", "cloudinary", "fuse.js", "jira", "figma", "power bi", "tableau",
-    "communication", "leadership", "problem solving", "teamwork", "analytical thinking"
+    # Programming Languages
+    "python", "java", "c", "c++", "c#", "javascript", "js", "typescript", "ts", "ruby", "go", "golang", "rust",
+    "bash", "shell", "powershell", "r", "swift", "kotlin", "objective-c", "perl", "matlab", "scala",
+
+    # Data Science / ML / AI
+    "numpy", "pandas", "matplotlib", "seaborn", "scikit-learn", "sklearn", "tensorflow", "keras", "pytorch", "openai", 
+    "huggingface", "transformers", "xgboost", "lightgbm", "catboost", "nltk", "spacy", "statsmodels", "mlflow", 
+    "opencv", "cv2", "jupyter", "jupyter notebook", "colab", "google colab",
+
+    # Database / Data Engineering
+    "sql", "mysql", "postgresql", "postgres", "sqlite", "mssql", "oracle", "mongodb", "mongo", "firebase", 
+    "bigquery", "snowflake", "redis", "cassandra", "elasticsearch", "dynamodb", "neo4j", "graph database",
+
+    # Web Dev - Frontend
+    "html", "css", "scss", "sass", "tailwind", "tailwind css", "bootstrap", "material ui", "mui", 
+    "react", "react.js", "reactjs", "next.js", "nextjs", "vue", "vue.js", "angular", "angular.js", "jquery",
+
+    # Web Dev - Backend
+    "node.js", "nodejs", "express", "express.js", "fastapi", "flask", "django", "spring", "spring boot",
+    "nest.js", "nestjs", "graphql", "rest", "rest api", "restful api", "axios", "rpc", "grpc", 
+
+    # DevOps / Tools / Infra
+    "git", "github", "gitlab", "bitbucket", "ci/cd", "jenkins", "docker", "docker-compose", "kubernetes", "k8s",
+    "terraform", "ansible", "prometheus", "grafana", "nginx", "apache", "linux", "ubuntu", "wsl", "zsh", "vim", 
+    "vs code", "vscode", "terminal", "shell scripting",
+
+    # Cloud
+    "aws", "azure", "gcp", "google cloud", "heroku", "cloudinary", "netlify", "vercel",
+
+    # Networking & Security
+    "tcp/ip", "udp", "arp", "http", "https", "dns", "ip addressing", "ip", "routing", "subnetting", 
+    "osi model", "bgp", "ospf", "icmp", "vpn", "firewall", "ssl", "tls", "md5", "sha256", "encryption", 
+    "cybersecurity", "ethical hacking",
+
+    # Realtime / Integration
+    "socket.io", "websocket", "mqtt", "rabbitmq", "kafka", "cron", "webhooks", "api gateway", "fuse.js",
+
+    # Tools / Miscellaneous
+    "postman", "swagger", "openapi", "jira", "figma", "canva", "notion", "draw.io", "miro", 
+    "excel", "power bi", "tableau", "looker", "datastudio", 
+
+    # Soft Skills
+    "communication", "leadership", "problem solving", "teamwork", "collaboration", 
+    "critical thinking", "analytical thinking", "adaptability", "time management", 
+    "creativity", "attention to detail"
 }
 
 # 🎯 Final function you call
