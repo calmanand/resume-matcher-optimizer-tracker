@@ -10,18 +10,14 @@ const ResultView = () => {
   const hybridScore = resultData?.hybridScore ?? resultData?.scores?.hybridScore ?? 0;
   const skillScore = resultData?.skillScore ?? resultData?.scores?.skillScore ?? null;
   const bertScore = resultData?.bertScore ?? resultData?.scores?.bertScore ?? null;
-  
-  // Handle aiFeedback - it can be an object with feedback array or a string
+
   let aiFeedback = '';
   if (resultData?.aiFeedback) {
     if (typeof resultData.aiFeedback === 'object' && resultData.aiFeedback.feedback) {
-      // New format: object with feedback array
       aiFeedback = resultData.aiFeedback.feedback.join('\n');
     } else if (Array.isArray(resultData.aiFeedback)) {
-      // Array format
       aiFeedback = resultData.aiFeedback.join('\n');
     } else if (typeof resultData.aiFeedback === 'string') {
-      // String format
       aiFeedback = resultData.aiFeedback.trim();
     }
   }
@@ -33,171 +29,73 @@ const ResultView = () => {
   else feedbackText = 'Excellent Match';
 
   if (!resultData) {
-    return <div style={styles.centerText}>No result data found.</div>;
+    return <div className="text-center text-red-600 font-bold mt-16">No result data found.</div>;
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>Analysis Result</h2>
+    <div className="max-w-2xl mx-auto mt-16 p-8 bg-white rounded-xl shadow-md font-sans">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-green-800">Analysis Result</h2>
         {authUser && (
-          <button onClick={logout} style={styles.logoutBtn}>Logout</button>
+          <button onClick={logout} className="bg-green-600 text-white px-5 py-2 rounded-md font-bold text-sm hover:bg-green-700 transition">Logout</button>
         )}
       </div>
 
       {skillScore !== null && (
-        <div style={styles.section}>
-          <strong>Skill Matching Score:</strong>{' '}
-          <span style={styles.score}>{Math.round(skillScore)}</span>
+        <div className="mb-5">
+          <strong>Skill Matching Score:</strong> <span className="text-green-700 font-bold text-lg">{Math.round(skillScore)}</span>
         </div>
       )}
 
       {bertScore !== null && (
-        <div style={styles.section}>
-          <strong>Phrasing Score:</strong>{' '}
-          <span style={styles.score}>{Math.round(bertScore)}</span>
+        <div className="mb-5">
+          <strong>Phrasing Score:</strong> <span className="text-green-700 font-bold text-lg">{Math.round(bertScore)}</span>
         </div>
       )}
 
-      <div style={styles.section}>
-        <strong>Evaluated Final Score:</strong>{' '}
-        <span style={styles.score}>{Math.round(hybridScore)}</span>
-        <span style={styles.scoreComment}> – {feedbackText}</span>
+      <div className="mb-5">
+        <strong>Evaluated Final Score:</strong> <span className="text-green-700 font-bold text-lg">{Math.round(hybridScore)}</span>
+        <span className="ml-3 text-base text-gray-700">– {feedbackText}</span>
       </div>
 
-      <div style={styles.section}>
+      <div className="mb-5">
         <strong>AI Suggestions:</strong>
-        <div style={styles.feedbackBox}>
+        <div className="bg-green-50 rounded-md p-4 text-sm leading-relaxed text-gray-800 mt-2">
           {aiFeedback ? (
-            <div>
-              {aiFeedback.split('\n').map((feedback, index) => (
-                <p key={index} style={styles.feedbackItem}>{feedback}</p>
-              ))}
-            </div>
+            aiFeedback.split('\n').map((feedback, index) => (
+              <p key={index} className="mb-2">{feedback}</p>
+            ))
           ) : (
-            <div style={{ fontStyle: 'italic', color: '#888' }}>
-              No AI suggestions available.
-            </div>
+            <div className="italic text-gray-500">No AI suggestions available.</div>
           )}
         </div>
       </div>
 
-      {/* ✅ Show Google Drive link if available */}
-      <div style={styles.section}>
+      <div className="mb-5">
         <strong>Google Drive Link:</strong>{' '}
         {resultData?.driveUrl ? (
-          <a
-            href={resultData.driveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.link}
-          >
+          <a href={resultData.driveUrl} target="_blank" rel="noopener noreferrer" className="text-green-700 underline font-semibold">
             {resultData.driveUrl}
           </a>
         ) : (
-          <span style={{ color: '#888' }}>N/A</span>
+          <span className="text-gray-500">N/A</span>
         )}
       </div>
 
-      <div style={styles.section}>
+      <div className="mb-5">
         <strong>How We Evaluate:</strong>
-        <div style={styles.explanationBox}>
+        <div className="bg-green-100 rounded-md p-4 text-sm leading-relaxed text-green-800 mt-2">
           <p>Our system evaluates your resume using three key aspects:</p>
-          <ul>
-            <li>
-              <strong>Skill Matching Score (40%):</strong> Compares keywords from your resume to those in the job description.
-            </li>
-            <li>
-              <strong>TF-IDF Match (30%):</strong> Analyzes term importance and similarity.
-            </li>
-            <li>
-              <strong>Phrasing Score (30%):</strong> Uses AI to assess language and meaning similarity.
-            </li>
+          <ul className="list-disc pl-5 mt-2">
+            <li><strong>Skill Matching Score (40%):</strong> Compares keywords from your resume to those in the job description.</li>
+            <li><strong>TF-IDF Match (30%):</strong> Analyzes term importance and similarity.</li>
+            <li><strong>Phrasing Score (30%):</strong> Uses AI to assess language and meaning similarity.</li>
           </ul>
-          <p>
-            These components are combined to calculate the <strong>Final Score</strong>.
-          </p>
+          <p className="mt-2">These components are combined to calculate the <strong>Final Score</strong>.</p>
         </div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '700px',
-    margin: '60px auto',
-    padding: '30px',
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-    fontFamily: 'Arial, sans-serif',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '25px',
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#2e7d32',
-  },
-  logoutBtn: {
-    backgroundColor: '#4caf50',
-    color: '#ffffff',
-    padding: '12px 20px',
-    borderRadius: '6px',
-    border: 'none',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '14px',
-    transition: 'background-color 0.3s ease',
-  },
-  section: {
-    marginBottom: '20px',
-  },
-  link: {
-    color: '#2e7d32',
-    textDecoration: 'underline',
-    fontWeight: 'bold',
-  },
-  score: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#388e3c',
-  },
-  scoreComment: {
-    marginLeft: '10px',
-    fontSize: '16px',
-    color: '#555',
-  },
-  feedbackBox: {
-    backgroundColor: '#f0f8f0',
-    borderRadius: '8px',
-    padding: '15px',
-    fontSize: '14px',
-    lineHeight: '1.6',
-    color: '#333',
-  },
-  feedbackItem: {
-    marginBottom: '10px',
-  },
-  centerText: {
-    marginTop: '60px',
-    textAlign: 'center',
-    color: 'red',
-    fontWeight: 'bold',
-  },
-  explanationBox: {
-    backgroundColor: '#e8f5e9',
-    borderRadius: '8px',
-    padding: '15px',
-    fontSize: '14px',
-    lineHeight: '1.6',
-    color: '#2e7d32',
-  },
 };
 
 export default ResultView;

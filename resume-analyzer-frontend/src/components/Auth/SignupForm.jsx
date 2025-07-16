@@ -25,19 +25,21 @@ const SignupForm = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.heading}>Create your account</h2>
-        <p style={styles.subheading}>Join ResumeChecker and optimize your career</p>
+    <div className="min-h-screen bg-green-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold text-green-800 text-center mb-2">Create your account</h2>
+        <p className="text-sm text-gray-600 text-center mb-6">
+          Join ResumeChecker and optimize your career
+        </p>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             placeholder="Full Name"
             required
             value={formData.fullName}
             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            style={styles.input}
+            className="w-full px-4 py-3 border border-green-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
           />
           <input
             type="email"
@@ -45,7 +47,7 @@ const SignupForm = () => {
             required
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            style={styles.input}
+            className="w-full px-4 py-3 border border-green-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
           />
           <input
             type="password"
@@ -53,88 +55,31 @@ const SignupForm = () => {
             required
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            style={styles.input}
+            className="w-full px-4 py-3 border border-green-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
           />
+
           <button
             type="submit"
             disabled={isSigningUp}
-            style={{
-              ...styles.button,
-              backgroundColor: isSigningUp ? '#a5d6a7' : '#4caf50',
-              cursor: isSigningUp ? 'not-allowed' : 'pointer',
-            }}
+            className={`w-full py-3 text-white font-bold rounded-md transition ${
+              isSigningUp
+                ? 'bg-green-300 cursor-not-allowed'
+                : 'bg-green-600 hover:bg-green-700'
+            }`}
           >
             {isSigningUp ? 'Creating account...' : 'Sign Up'}
           </button>
-          <p style={styles.loginText}>
+
+          <p className="text-sm text-center text-gray-600 mt-4">
             Already have an account?{' '}
-            <Link to="/login" style={styles.loginLink}>Log in</Link>
+            <Link to="/login" className="text-green-700 font-bold underline hover:text-green-900">
+              Log in
+            </Link>
           </p>
         </form>
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0fff4',
-    padding: '20px',
-  },
-  card: {
-    width: '100%',
-    maxWidth: '420px',
-    padding: '30px',
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-    fontFamily: 'Arial, sans-serif',
-  },
-  heading: {
-    fontSize: '22px',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: '8px',
-    color: '#2e7d32',
-  },
-  subheading: {
-    fontSize: '14px',
-    textAlign: 'center',
-    marginBottom: '20px',
-    color: '#555',
-  },
-  input: {
-    width: '100%',
-    padding: '10px',
-    marginBottom: '15px',
-    borderRadius: '6px',
-    border: '1px solid #a5d6a7',
-    fontSize: '14px',
-  },
-  button: {
-    width: '100%',
-    padding: '12px',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '6px',
-    fontWeight: 'bold',
-    transition: 'background-color 0.3s ease',
-  },
-  loginText: {
-    marginTop: '12px',
-    textAlign: 'center',
-    fontSize: '14px',
-    color: '#555',
-  },
-  loginLink: {
-    color: '#2e7d32',
-    textDecoration: 'underline',
-    fontWeight: 'bold',
-  },
 };
 
 export default SignupForm;

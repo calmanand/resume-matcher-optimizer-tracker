@@ -27,14 +27,13 @@ const HRDashboard = () => {
     } else {
       setLoadingMsgIndex(0);
     }
-
     return () => clearInterval(interval);
   }, [isSubmitting]);
 
   const testConnection = async () => {
     try {
       setIsLoading(true);
-      const response = await axiosInstance.get('/');
+      await axiosInstance.get('/');
       toast.success('Backend connection successful!');
     } catch (err) {
       toast.error('Backend connection failed. Please ensure the server is running on port 8000.');
@@ -48,21 +47,15 @@ const HRDashboard = () => {
       toast.error('Please enter a job description');
       return;
     }
-
     try {
       setIsSubmitting(true);
       const formData = new FormData();
       formData.append('jd_text', jobDescription);
-
-      const response = await axiosInstance.post('/hr/top-matches', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
+      const response = await axiosInstance.post('/hr/top-matches', formData);
       setTopResumes(response.data.topResumes);
       setShowResults(true);
       toast.success(`Found ${response.data.count} matching resumes!`);
     } catch (err) {
-      console.error('Error fetching top matches:', err);
       if (err.response?.status === 404) {
         toast.error('No resumes found in database. Please upload some resumes first.');
       } else if (err.response?.status === 500) {
@@ -76,9 +69,9 @@ const HRDashboard = () => {
   };
 
   const getScoreColor = (score) => {
-    if (score >= 80) return '#4caf50';
-    if (score >= 60) return '#ff9800';
-    return '#f44336';
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   const getScoreLabel = (score) => {
@@ -88,127 +81,107 @@ const HRDashboard = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>HR Dashboard</h1>
-      <p style={styles.subtitle}>Enter a job description to find the best matching resumes from our database.</p>
-      <p style={styles.note}>We provide the best CANDIDATES as per your requirement.</p>
+    <div className="max-w-6xl mx-auto p-8 bg-white rounded-xl shadow-md font-sans">
+      <h1 className="text-3xl font-bold text-green-800 text-center mb-2">HR Dashboard</h1>
+      <p className="text-center text-gray-700 mb-1">Enter a job description to find the best matching resumes from our database.</p>
+      <p className="text-center text-green-700 font-semibold mb-4">We provide the best CANDIDATES as per your requirement.</p>
 
-      <div style={styles.testContainer}>
+      <div className="text-center mb-4">
         <button
           onClick={testConnection}
           disabled={isLoading}
-          style={{
-            ...styles.testButton,
-            backgroundColor: isLoading ? '#ccc' : '#2196f3',
-            cursor: isLoading ? 'not-allowed' : 'pointer'
-          }}
+          className={`px-4 py-2 rounded text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
         >
           {isLoading ? 'Testing...' : 'Test Backend Connection'}
         </button>
       </div>
 
       <textarea
-        placeholder="Paste your job description here..."
         value={jobDescription}
         onChange={(e) => setJobDescription(e.target.value)}
         rows={10}
-        style={styles.textarea}
+        className="w-full p-3 border border-green-300 rounded-md text-sm mb-4"
+        placeholder="Paste your job description here..."
       />
 
       <button
         onClick={handleSubmit}
         disabled={isSubmitting}
-        style={{
-          ...styles.button,
-          backgroundColor: isSubmitting ? '#a5d6a7' : '#4caf50',
-          cursor: isSubmitting ? 'not-allowed' : 'pointer'
-        }}
+        className={`block mx-auto px-6 py-3 rounded text-white font-bold text-lg transition duration-300 ${isSubmitting ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} mb-6`}
       >
         {isSubmitting ? 'Analyzing...' : 'Find Best Matches'}
       </button>
 
       {isSubmitting && (
-        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+        <div className="text-center">
           <img
             src="https://i.gifer.com/ZZ5H.gif"
             alt="Loading..."
-            style={{ width: '48px', marginBottom: '8px' }}
+            className="w-12 mx-auto mb-2"
           />
-          <p style={{ color: '#555', fontStyle: 'italic', transition: 'opacity 0.3s ease' }}>
+          <p className="text-gray-600 italic transition-opacity duration-300">
             {loadingMessages[loadingMsgIndex]}
           </p>
         </div>
       )}
 
       {showResults && topResumes.length > 0 && (
-        <div style={styles.resultsContainer}>
-          <h2 style={styles.resultsTitle}>Top Matching Resumes</h2>
-          <p style={styles.resultsSubtitle}>
-            Found {topResumes.length} matching resumes for your job description
-          </p>
+        <div>
+          <h2 className="text-2xl font-bold text-green-800 text-center mb-1">Top Matching Resumes</h2>
+          <p className="text-center text-gray-600 mb-6">Found {topResumes.length} matching resumes for your job description</p>
 
-          <div style={styles.resumesList}>
+          <div className="grid gap-6">
             {topResumes.map((resume, index) => (
-              <div key={resume.resumeId} style={styles.resumeCard}>
-                <div style={styles.resumeHeader}>
-                  <h3 style={styles.resumeTitle}>
+              <div key={resume.resumeId} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
                     Candidate #{index + 1} - {resume.email}
                   </h3>
-                  <div style={styles.scoreContainer}>
-                    <span style={styles.scoreLabel}>Overall Score:</span>
-                    <span style={{
-                      ...styles.score,
-                      color: getScoreColor(resume.scores.hybridScore)
-                    }}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Overall Score:</span>
+                    <span className={`text-lg font-bold ${getScoreColor(resume.scores.hybridScore)}`}>
                       {resume.scores.hybridScore.toFixed(1)}%
                     </span>
-                    <span style={{
-                      ...styles.scoreLabel,
-                      color: getScoreColor(resume.scores.hybridScore)
-                    }}>
+                    <span className={`text-sm font-semibold ${getScoreColor(resume.scores.hybridScore)}`}>
                       ({getScoreLabel(resume.scores.hybridScore)})
                     </span>
                   </div>
                 </div>
 
-                <div style={styles.scoresGrid}>
-                  <div style={styles.scoreItem}>
-                    <span style={styles.scoreName}>Skill Match:</span>
-                    <span style={styles.scoreValue}>
-                      {resume.scores.skillScore.toFixed(1)}%
-                    </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div className="flex justify-between items-center p-2 border rounded">
+                    <span className="text-sm text-gray-600">Skill Match:</span>
+                    <span className="font-bold text-gray-800">{resume.scores.skillScore.toFixed(1)}%</span>
                   </div>
-                  <div style={styles.scoreItem}>
-                    <span style={styles.scoreName}>TF-IDF Score:</span>
-                    <span style={styles.scoreValue}>
-                      {resume.scores.tfidfScore.toFixed(1)}%
-                    </span>
+                  <div className="flex justify-between items-center p-2 border rounded">
+                    <span className="text-sm text-gray-600">TF-IDF Score:</span>
+                    <span className="font-bold text-gray-800">{resume.scores.tfidfScore.toFixed(1)}%</span>
                   </div>
-                  <div style={styles.scoreItem}>
-                    <span style={styles.scoreName}>BERT Score:</span>
-                    <span style={styles.scoreValue}>
-                      {resume.scores.bertScore.toFixed(1)}%
-                    </span>
+                  <div className="flex justify-between items-center p-2 border rounded">
+                    <span className="text-sm text-gray-600">BERT Score:</span>
+                    <span className="font-bold text-gray-800">{resume.scores.bertScore.toFixed(1)}%</span>
                   </div>
                 </div>
 
                 {resume.matchedSkills?.length > 0 && (
-                  <div style={styles.skillsContainer}>
-                    <h4 style={styles.skillsTitle}>Matched Skills:</h4>
-                    <div style={styles.skillsList}>
+                  <div className="mb-4">
+                    <h4 className="text-sm font-bold text-gray-700 mb-1">Matched Skills:</h4>
+                    <div className="flex flex-wrap gap-2">
                       {resume.matchedSkills.map((skill, idx) => (
-                        <span key={idx} style={styles.skillTag}>{skill}</span>
+                        <span key={idx} className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                          {skill}
+                        </span>
                       ))}
                     </div>
                   </div>
                 )}
 
-                <div style={styles.resumeActions}>
+                <div className="text-right">
                   <a
                     href={resume.resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={styles.viewButton}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium"
                   >
                     View Resume
                   </a>
@@ -220,53 +193,13 @@ const HRDashboard = () => {
       )}
 
       {showResults && topResumes.length === 0 && (
-        <div style={styles.noResults}>
-          <h3>No matching resumes found</h3>
+        <div className="text-center p-10 text-gray-600">
+          <h3 className="text-lg font-semibold">No matching resumes found</h3>
           <p>Try adjusting your job description or check if there are resumes in the database.</p>
         </div>
       )}
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '40px auto',
-    padding: '30px',
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-    fontFamily: 'Arial, sans-serif',
-  },
-  title: { fontSize: '28px', color: '#2e7d32', marginBottom: '10px', textAlign: 'center' },
-  subtitle: { color: '#444', fontSize: '16px', marginBottom: '10px', textAlign: 'center' },
-  note: { color: '#2e7d32', fontSize: '15px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' },
-  testContainer: { textAlign: 'center', marginBottom: '20px' },
-  testButton: { padding: '8px 16px', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '500' },
-  textarea: { width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #a5d6a7', fontSize: '14px', resize: 'vertical', marginBottom: '20px' },
-  button: { padding: '12px 24px', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', fontSize: '16px', transition: 'background-color 0.3s ease', display: 'block', margin: '0 auto 30px' },
-  resultsContainer: { marginTop: '30px' },
-  resultsTitle: { fontSize: '24px', color: '#2e7d32', marginBottom: '10px', textAlign: 'center' },
-  resultsSubtitle: { color: '#666', fontSize: '16px', marginBottom: '30px', textAlign: 'center' },
-  resumesList: { display: 'grid', gap: '20px' },
-  resumeCard: { border: '1px solid #e0e0e0', borderRadius: '8px', padding: '20px', backgroundColor: '#fafafa' },
-  resumeHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' },
-  resumeTitle: { fontSize: '18px', color: '#333', margin: 0 },
-  scoreContainer: { display: 'flex', alignItems: 'center', gap: '8px' },
-  scoreLabel: { fontSize: '14px', color: '#666' },
-  score: { fontSize: '18px', fontWeight: 'bold' },
-  scoresGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', marginBottom: '15px' },
-  scoreItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', backgroundColor: '#fff', borderRadius: '4px', border: '1px solid #e0e0e0' },
-  scoreName: { fontSize: '14px', color: '#666' },
-  scoreValue: { fontSize: '14px', fontWeight: 'bold', color: '#333' },
-  skillsContainer: { marginBottom: '15px' },
-  skillsTitle: { fontSize: '16px', color: '#333', marginBottom: '8px' },
-  skillsList: { display: 'flex', flexWrap: 'wrap', gap: '8px' },
-  skillTag: { backgroundColor: '#e8f5e8', color: '#2e7d32', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '500' },
-  resumeActions: { display: 'flex', justifyContent: 'flex-end' },
-  viewButton: { backgroundColor: '#2196f3', color: '#fff', padding: '8px 16px', borderRadius: '4px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' },
-  noResults: { textAlign: 'center', padding: '40px', color: '#666' },
 };
 
 export default HRDashboard;

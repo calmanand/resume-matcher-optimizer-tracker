@@ -13,7 +13,7 @@ const UploadView = () => {
   const navigate = useNavigate();
   const { logout, authUser } = useAuthStore();
 
-  const demoJD = `We are looking for a passionate JavaScript Developer Intern to join our front-end engineering team focused on building modern, responsive web applications. The ideal candidate should have experience with JavaScript, HTML, CSS, and working knowledge of front-end libraries like React or Vue. You will contribute to developing interactive dashboards, integrating RESTful APIs, and optimizing user interfaces for performance and accessibility. Familiarity with Git, basic DevOps (e.g., Docker), and working in agile teams is preferred. Candidates with experience in design systems, browser rendering optimization, or JavaScript testing frameworks (Jest, Cypress) will have an edge. This is a remote role with opportunities to work on real-world client projects and grow under experienced mentorship. are seeking a highly motivated MERN intern  with hands-on experience  fine-tuning,Candidates with proven project work on GitHub and a strong foundation in machine learning, computer vision, and backend systems will be preferred. This is a remote internship with opportunities for mentorship, certification, and full-time conversion..`;
+  const demoJD = `We are looking for a passionate JavaScript Developer Intern to join our front-end engineering team focused on building modern, responsive web applications. ...`;
 
   const handleUseDemo = async () => {
     try {
@@ -57,36 +57,48 @@ const UploadView = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.heading}>Upload Resume and Job Description</h2>
+    <div className="max-w-xl mx-auto mt-16 p-8 bg-white rounded-xl shadow-lg font-sans">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-green-800">Upload Resume and Job Description</h2>
         {authUser && (
-          <button onClick={logout} style={styles.logoutBtn}>Logout</button>
+          <button
+            onClick={logout}
+            className="bg-green-600 text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-green-700 transition"
+          >
+            Logout
+          </button>
         )}
       </div>
 
-      <p style={styles.note}>
+      <p className="text-sm text-gray-700 mb-3">
         To test the app, you can upload your own resume or{' '}
-        <button onClick={handleUseDemo} style={styles.demoBtn}>use demo resume and JD</button>.
+        <button
+          onClick={handleUseDemo}
+          className="text-green-700 underline font-semibold hover:text-green-900"
+        >
+          use demo resume and JD
+        </button>.
       </p>
 
-      <input 
-        type="file" 
-        accept=".pdf" 
-        onChange={(e) => setResumeFile(e.target.files[0])} 
-        style={styles.input}
+      <input
+        type="file"
+        accept=".pdf"
+        onChange={(e) => setResumeFile(e.target.files[0])}
+        className="w-full border border-green-300 rounded-md p-2 mb-2 text-sm"
       />
 
       {resumeFile && (
-        <p style={styles.fileName}>Selected file: <strong>{resumeFile.name}</strong></p>
+        <p className="text-sm text-gray-600 mb-3">
+          Selected file: <strong>{resumeFile.name}</strong>
+        </p>
       )}
 
       <input
         type="url"
-        placeholder="paste Google Drive link here "
+        placeholder="Paste Google Drive link here"
         value={driveUrl}
         onChange={(e) => setDriveUrl(e.target.value)}
-        style={styles.input}
+        className="w-full border border-green-300 rounded-md p-2 mb-3 text-sm"
       />
 
       <textarea
@@ -94,116 +106,27 @@ const UploadView = () => {
         onChange={(e) => setJobDescription(e.target.value)}
         placeholder="Paste job description here..."
         rows={8}
-        style={styles.textarea}
+        className="w-full border border-green-300 rounded-md p-2 mb-5 text-sm resize-y"
       />
 
       <button
         onClick={handleSubmit}
         disabled={isSubmitting}
-        style={{
-          ...styles.button,
-          backgroundColor: isSubmitting ? '#a5d6a7' : '#4caf50',
-          cursor: isSubmitting ? 'not-allowed' : 'pointer'
-        }}
+        className={`w-full py-3 text-white font-bold rounded-md transition ${
+          isSubmitting ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+        }`}
       >
         {isSubmitting ? 'Analyzing...' : 'Submit'}
       </button>
 
-      <Link to="/getme" style={styles.viewResultsLink}>
+      <Link
+        to="/getme"
+        className="block mt-6 text-center text-green-700 underline font-semibold text-sm hover:text-green-900"
+      >
         View Past Results
       </Link>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '600px',
-    margin: '60px auto',
-    padding: '30px',
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-    fontFamily: 'Arial, sans-serif',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-  },
-  heading: {
-    fontSize: '22px',
-    color: '#2e7d32',
-    fontWeight: 'bold',
-  },
-  logoutBtn: {
-    backgroundColor: '#4caf50',
-    color: '#ffffff',
-    padding: '12px 20px',
-    borderRadius: '6px',
-    border: 'none',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '14px',
-    transition: 'background-color 0.3s ease',
-  },
-  note: {
-    marginBottom: '15px',
-    fontSize: '14px',
-    color: '#333',
-  },
-  demoBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#2e7d32',
-    cursor: 'pointer',
-    textDecoration: 'underline',
-    fontWeight: 'bold',
-    fontSize: '14px',
-    padding: 0,
-  },
-  input: {
-    width: '100%',
-    padding: '10px',
-    marginBottom: '10px',
-    borderRadius: '6px',
-    border: '1px solid #a5d6a7',
-    fontSize: '14px',
-  },
-  fileName: {
-    fontSize: '14px',
-    marginTop: '4px',
-    marginBottom: '15px',
-    color: '#555',
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '6px',
-    border: '1px solid #a5d6a7',
-    marginBottom: '20px',
-    fontSize: '14px',
-    resize: 'vertical',
-  },
-  button: {
-    width: '100%',
-    padding: '12px',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    fontWeight: 'bold',
-    transition: 'background-color 0.3s ease',
-  },
-  viewResultsLink: {
-    display: 'block',
-    marginTop: '20px',
-    textAlign: 'center',
-    color: '#2e7d32',
-    textDecoration: 'underline',
-    fontWeight: 'bold',
-    fontSize: '14px',
-  },
 };
 
 export default UploadView;

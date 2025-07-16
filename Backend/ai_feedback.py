@@ -2,7 +2,7 @@ def generate_feedback(resume_text, analysis_results):
     """
     AI-like dynamic feedback generator: fully natural, no rigid conditionals.
     """
-
+    
     skill_score = analysis_results.get("skillScore", 0)
     hybrid_score = analysis_results.get("hybridScore", 0)
     missing_skills = analysis_results.get("missingSkills", [])
