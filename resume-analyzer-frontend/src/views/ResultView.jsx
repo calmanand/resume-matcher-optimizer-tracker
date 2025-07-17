@@ -1,6 +1,8 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import { motion } from 'framer-motion';
+import { Info, CheckCircle, ExternalLink } from 'lucide-react';
 
 const ResultView = () => {
   const location = useLocation();
@@ -14,86 +16,155 @@ const ResultView = () => {
   let aiFeedback = '';
   if (resultData?.aiFeedback) {
     if (typeof resultData.aiFeedback === 'object' && resultData.aiFeedback.feedback) {
-      aiFeedback = resultData.aiFeedback.feedback.join('\n');
+      aiFeedback = resultData.aiFeedback.feedback.join('. ');
     } else if (Array.isArray(resultData.aiFeedback)) {
-      aiFeedback = resultData.aiFeedback.join('\n');
+      aiFeedback = resultData.aiFeedback.join('. ');
     } else if (typeof resultData.aiFeedback === 'string') {
       aiFeedback = resultData.aiFeedback.trim();
     }
   }
 
+  const aiFeedbackList = aiFeedback
+    ? aiFeedback
+        .split(/(?<=[.?!])\s+(?=[A-Z])/)
+        .filter((item) => item.trim().length > 0)
+    : [];
+
   let feedbackText = '';
-  if (hybridScore <= 40) feedbackText = 'Poor Match';
-  else if (hybridScore <= 55) feedbackText = 'Average Match';
-  else if (hybridScore <= 80) feedbackText = 'Above Average Match';
-  else feedbackText = 'Excellent Match';
+  let scoreColor = 'text-gray-600';
+  if (hybridScore <= 40) {
+    feedbackText = 'Poor Match';
+    scoreColor = 'text-red-600';
+  } else if (hybridScore <= 55) {
+    feedbackText = 'Average Match';
+    scoreColor = 'text-yellow-600';
+  } else if (hybridScore <= 80) {
+    feedbackText = 'Above Average Match';
+    scoreColor = 'text-blue-600';
+  } else {
+    feedbackText = 'Excellent Match';
+    scoreColor = 'text-green-700';
+  }
 
   if (!resultData) {
     return <div className="text-center text-red-600 font-bold mt-16">No result data found.</div>;
   }
 
   return (
-    <div className="max-w-2xl mx-auto mt-16 p-8 bg-white rounded-xl shadow-md font-sans">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-green-800">Analysis Result</h2>
-        {authUser && (
-          <button onClick={logout} className="bg-green-600 text-white px-5 py-2 rounded-md font-bold text-sm hover:bg-green-700 transition">Logout</button>
-        )}
-      </div>
-
-      {skillScore !== null && (
-        <div className="mb-5">
-          <strong>Skill Matching Score:</strong> <span className="text-green-700 font-bold text-lg">{Math.round(skillScore)}</span>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-gradient-to-tr from-lime-100 to-green-50 font-sans">
+      {/* LEFT SIDE - Explanation */}
+      <motion.div
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="flex-1 flex items-center justify-center p-8 bg-white/80 backdrop-blur-lg shadow-inner"
+      >
+        <div className="max-w-xl w-full space-y-6">
+          <h2 className="text-3xl font-bold text-green-900">Evaluation Criteria</h2>
+          <div className="space-y-4 text-sm text-green-900">
+            <div>
+              <p className="flex gap-2 items-start">
+                <Info className="w-5 h-5 mt-1 text-green-700" />
+                <span>
+                  <strong>Skill Matching (40%):</strong> Measures how many job-relevant skills your resume includes.
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="flex gap-2 items-start">
+                <Info className="w-5 h-5 mt-1 text-green-700" />
+                <span>
+                  <strong>TF-IDF Similarity (30%):</strong> Identifies important and unique terms relevant to the job post.
+                </span>
+              </p>
+              <p className="text-xs text-gray-700 ml-7">
+                🔍 Helps emphasize what makes your resume stand out.
+              </p>
+            </div>
+            <div>
+              <p className="flex gap-2 items-start">
+                <Info className="w-5 h-5 mt-1 text-green-700" />
+                <span>
+                  <strong>BERT Score (30%):</strong> Evaluates how well the *meaning* of your resume matches the job using advanced NLP.
+                </span>
+              </p>
+              <p className="text-xs text-gray-700 ml-7">
+                🤖 BERT understands the *context* beyond keywords — like a human recruiter would.
+              </p>
+            </div>
+            <p className="pt-2 text-green-800 text-sm">
+              All these metrics are weighted and combined to form your final match score.
+            </p>
+          </div>
         </div>
-      )}
+      </motion.div>
 
-      {bertScore !== null && (
-        <div className="mb-5">
-          <strong>Phrasing Score:</strong> <span className="text-green-700 font-bold text-lg">{Math.round(bertScore)}</span>
+      {/* RIGHT SIDE - Result */}
+      <motion.div
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="flex-1 flex items-center justify-center p-8 bg-white"
+      >
+        <div className="max-w-xl w-full space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-bold text-green-900">Your Resume Match</h2>
+            {authUser && (
+              <button
+                onClick={logout}
+                className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-green-700 transition"
+              >
+                Logout
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-2 text-sm text-gray-800">
+            <div>
+              <strong>Skill Score:</strong>{' '}
+              <span className="text-green-700 font-bold text-lg">{Math.round(skillScore)}</span>
+            </div>
+            <div>
+              <strong>BERT Score:</strong>{' '}
+              <span className="text-green-700 font-bold text-lg">{Math.round(bertScore)}</span>
+            </div>
+            <div>
+              <strong>Final Score:</strong>{' '}
+              <span className={`font-bold text-lg ${scoreColor}`}>{Math.round(hybridScore)}</span>
+              <span className="ml-2 text-gray-700">– {feedbackText}</span>
+            </div>
+          </div>
+
+          <div>
+            <strong>AI Suggestions:</strong>
+            <ul className="bg-green-50 rounded-md p-4 mt-2 text-sm text-gray-800 space-y-2 list-disc list-inside">
+              {aiFeedbackList.length > 0 ? (
+                aiFeedbackList.map((point, index) => (
+                  <li key={index}>{point.trim()}</li>
+                ))
+              ) : (
+                <li className="italic text-gray-500">No AI suggestions available.</li>
+              )}
+            </ul>
+          </div>
+
+          <div>
+            <strong>Google Drive Link:</strong>{' '}
+            {resultData?.driveUrl ? (
+              <a
+                href={resultData.driveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-green-700 underline font-semibold"
+              >
+                {resultData.driveUrl.slice(0, 45)}... <ExternalLink className="w-4 h-4" />
+              </a>
+            ) : (
+              <span className="text-gray-500">N/A</span>
+            )}
+          </div>
         </div>
-      )}
-
-      <div className="mb-5">
-        <strong>Evaluated Final Score:</strong> <span className="text-green-700 font-bold text-lg">{Math.round(hybridScore)}</span>
-        <span className="ml-3 text-base text-gray-700">– {feedbackText}</span>
-      </div>
-
-      <div className="mb-5">
-        <strong>AI Suggestions:</strong>
-        <div className="bg-green-50 rounded-md p-4 text-sm leading-relaxed text-gray-800 mt-2">
-          {aiFeedback ? (
-            aiFeedback.split('\n').map((feedback, index) => (
-              <p key={index} className="mb-2">{feedback}</p>
-            ))
-          ) : (
-            <div className="italic text-gray-500">No AI suggestions available.</div>
-          )}
-        </div>
-      </div>
-
-      <div className="mb-5">
-        <strong>Google Drive Link:</strong>{' '}
-        {resultData?.driveUrl ? (
-          <a href={resultData.driveUrl} target="_blank" rel="noopener noreferrer" className="text-green-700 underline font-semibold">
-            {resultData.driveUrl}
-          </a>
-        ) : (
-          <span className="text-gray-500">N/A</span>
-        )}
-      </div>
-
-      <div className="mb-5">
-        <strong>How We Evaluate:</strong>
-        <div className="bg-green-100 rounded-md p-4 text-sm leading-relaxed text-green-800 mt-2">
-          <p>Our system evaluates your resume using three key aspects:</p>
-          <ul className="list-disc pl-5 mt-2">
-            <li><strong>Skill Matching Score (40%):</strong> Compares keywords from your resume to those in the job description.</li>
-            <li><strong>TF-IDF Match (30%):</strong> Analyzes term importance and similarity.</li>
-            <li><strong>Phrasing Score (30%):</strong> Uses AI to assess language and meaning similarity.</li>
-          </ul>
-          <p className="mt-2">These components are combined to calculate the <strong>Final Score</strong>.</p>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

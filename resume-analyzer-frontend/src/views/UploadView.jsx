@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { axiosInstance } from '../lib/axios';
-import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/useAuthStore';
-import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const UploadView = () => {
   const [resumeFile, setResumeFile] = useState(null);
@@ -13,7 +13,7 @@ const UploadView = () => {
   const navigate = useNavigate();
   const { logout, authUser } = useAuthStore();
 
-  const demoJD = `We are looking for a passionate JavaScript Developer Intern to join our front-end engineering team focused on building modern, responsive web applications. ...`;
+  const demoJD = `We are looking for a passionate JavaScript Developer Intern to join our front-end engineering team focused on building modern, responsive web applications. You will work with React, REST APIs, and collaborate with designers and product managers to build features users love.`;
 
   const handleUseDemo = async () => {
     try {
@@ -57,74 +57,89 @@ const UploadView = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-16 p-8 bg-white rounded-xl shadow-lg font-sans">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-green-800">Upload Resume and Job Description</h2>
-        {authUser && (
+    <div className="min-h-screen bg-gradient-to-tr from-lime-100 to-green-50 flex items-center justify-center px-4 py-12">
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{
+          type: "spring",
+          stiffness: 70,
+          damping: 14,
+          duration: 0.6,
+        }}
+        className="w-full max-w-2xl bg-white/90 backdrop-blur-md border border-white/30 shadow-xl rounded-2xl px-8 py-10"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-extrabold text-green-900">Upload Resume & JD</h2>
+          {authUser && (
+            <button
+              onClick={logout}
+              className="bg-green-700 text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-green-800 transition"
+            >
+              Logout
+            </button>
+          )}
+        </div>
+
+        <p className="text-sm text-gray-700 mb-5">
+          Upload your resume or{' '}
           <button
-            onClick={logout}
-            className="bg-green-600 text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-green-700 transition"
+            onClick={handleUseDemo}
+            className="text-green-700 font-semibold underline hover:text-green-900"
           >
-            Logout
+            use demo resume & JD
           </button>
-        )}
-      </div>
-
-      <p className="text-sm text-gray-700 mb-3">
-        To test the app, you can upload your own resume or{' '}
-        <button
-          onClick={handleUseDemo}
-          className="text-green-700 underline font-semibold hover:text-green-900"
-        >
-          use demo resume and JD
-        </button>.
-      </p>
-
-      <input
-        type="file"
-        accept=".pdf"
-        onChange={(e) => setResumeFile(e.target.files[0])}
-        className="w-full border border-green-300 rounded-md p-2 mb-2 text-sm"
-      />
-
-      {resumeFile && (
-        <p className="text-sm text-gray-600 mb-3">
-          Selected file: <strong>{resumeFile.name}</strong>
         </p>
-      )}
 
-      <input
-        type="url"
-        placeholder="Paste Google Drive link here"
-        value={driveUrl}
-        onChange={(e) => setDriveUrl(e.target.value)}
-        className="w-full border border-green-300 rounded-md p-2 mb-3 text-sm"
-      />
+        <div className="space-y-4">
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={(e) => setResumeFile(e.target.files[0])}
+            className="w-full border border-green-300 rounded-lg px-4 py-3 text-sm bg-white shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+          {resumeFile && (
+            <p className="text-sm text-gray-600">
+              Selected file: <strong>{resumeFile.name}</strong>
+            </p>
+          )}
 
-      <textarea
-        value={jobDescription}
-        onChange={(e) => setJobDescription(e.target.value)}
-        placeholder="Paste job description here..."
-        rows={8}
-        className="w-full border border-green-300 rounded-md p-2 mb-5 text-sm resize-y"
-      />
+          <input
+            type="url"
+            placeholder="Paste Google Drive link"
+            value={driveUrl}
+            onChange={(e) => setDriveUrl(e.target.value)}
+            className="w-full border border-green-300 rounded-lg px-4 py-3 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
 
-      <button
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-        className={`w-full py-3 text-white font-bold rounded-md transition ${
-          isSubmitting ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
-        }`}
-      >
-        {isSubmitting ? 'Analyzing...' : 'Submit'}
-      </button>
+          <textarea
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+            placeholder="Paste job description here..."
+            rows={6}
+            className="w-full border border-green-300 rounded-lg px-4 py-3 text-sm resize-y shadow-inner focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+        </div>
 
-      <Link
-        to="/getme"
-        className="block mt-6 text-center text-green-700 underline font-semibold text-sm hover:text-green-900"
-      >
-        View Past Results
-      </Link>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={`mt-6 w-full py-3 text-white font-bold rounded-lg transition-all duration-300 ${
+            isSubmitting
+              ? 'bg-green-300 cursor-not-allowed'
+              : 'bg-green-700 hover:bg-green-800 shadow-md'
+          }`}
+        >
+          {isSubmitting ? 'Analyzing...' : 'Submit'}
+        </button>
+
+        <Link
+          to="/getme"
+          className="block text-center mt-6 text-green-700 underline font-semibold text-sm hover:text-green-900"
+        >
+          View Past Results
+        </Link>
+      </motion.div>
     </div>
   );
 };

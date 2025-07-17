@@ -1,46 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { axiosInstance } from '../lib/axios';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const HRDashboard = () => {
-  const [jobDescription, setJobDescription] = useState(`We are seeking a highly skilled Full Stack Developer with strong knowledge of React.js, Node.js, MongoDB, and Express. The ideal candidate should have experience with RESTful APIs, Git, cloud services (AWS preferred), and possess strong problem-solving and communication skills. Familiarity with CI/CD and Docker is a plus.`);
+  const [jobDescription, setJobDescription] = useState(
+    `We are seeking a highly skilled Full Stack Developer with strong knowledge of React.js, Node.js, MongoDB, and Express. The ideal candidate should have experience with RESTful APIs, Git, cloud services (AWS preferred), and possess strong problem-solving and communication skills. Familiarity with CI/CD and Docker is a plus.`
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [topResumes, setTopResumes] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
 
-  const loadingMessages = [
-    "Please wait while we analyze your job description...",
-    "We are finding the best matches for you...",
-    "Just a moment, fetching top candidates...",
-    "Shortlisting the most relevant resumes...",
-    "Almost there! Finalizing the best picks..."
+  const triviaFacts = [
+    "📄 Traditional recruiters often spent hours reviewing piles of resumes manually.",
+    "⏳ On average, hiring managers spend just 7 seconds scanning a resume.",
+    "🤖 AI recruitment tools analyze skills, phrasing, and relevance in seconds.",
+    "🧠 Data-driven hiring improves match quality and reduces unconscious bias.",
+    "🔍 Models like TF-IDF and BERT understand context better than keyword filters."
   ];
 
   useEffect(() => {
     let interval;
     if (isSubmitting) {
       interval = setInterval(() => {
-        setLoadingMsgIndex((prev) => (prev + 1) % loadingMessages.length);
-      }, 5000);
+        setLoadingMsgIndex((prev) => (prev + 1) % triviaFacts.length);
+      }, 4000);
     } else {
       setLoadingMsgIndex(0);
     }
     return () => clearInterval(interval);
-  }, [isSubmitting]);
-
-  const testConnection = async () => {
-    try {
-      setIsLoading(true);
-      await axiosInstance.get('/');
-      toast.success('Backend connection successful!');
-    } catch (err) {
-      toast.error('Backend connection failed. Please ensure the server is running on port 8000.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [isSubmitting, triviaFacts.length]);
 
   const handleSubmit = async () => {
     if (!jobDescription.trim()) {
@@ -56,13 +46,7 @@ const HRDashboard = () => {
       setShowResults(true);
       toast.success(`Found ${response.data.count} matching resumes!`);
     } catch (err) {
-      if (err.response?.status === 404) {
-        toast.error('No resumes found in database. Please upload some resumes first.');
-      } else if (err.response?.status === 500) {
-        toast.error('Server error. Please check if all dependencies are installed.');
-      } else {
-        toast.error(err.response?.data?.detail || 'Failed to get matching resumes');
-      }
+      toast.error(err.response?.data?.detail || 'Failed to get matching resumes');
     } finally {
       setIsSubmitting(false);
     }
@@ -86,20 +70,10 @@ const HRDashboard = () => {
       <p className="text-center text-gray-700 mb-1">Enter a job description to find the best matching resumes from our database.</p>
       <p className="text-center text-green-700 font-semibold mb-4">We provide the best CANDIDATES as per your requirement.</p>
 
-      <div className="text-center mb-4">
-        <button
-          onClick={testConnection}
-          disabled={isLoading}
-          className={`px-4 py-2 rounded text-white font-medium ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
-        >
-          {isLoading ? 'Testing...' : 'Test Backend Connection'}
-        </button>
-      </div>
-
       <textarea
         value={jobDescription}
         onChange={(e) => setJobDescription(e.target.value)}
-        rows={10}
+        rows={8}
         className="w-full p-3 border border-green-300 rounded-md text-sm mb-4"
         placeholder="Paste your job description here..."
       />
@@ -107,21 +81,29 @@ const HRDashboard = () => {
       <button
         onClick={handleSubmit}
         disabled={isSubmitting}
-        className={`block mx-auto px-6 py-3 rounded text-white font-bold text-lg transition duration-300 ${isSubmitting ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} mb-6`}
+        className={`block mx-auto px-6 py-3 rounded text-white font-bold text-lg transition duration-300 ${
+          isSubmitting ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+        } mb-6`}
       >
         {isSubmitting ? 'Analyzing...' : 'Find Best Matches'}
       </button>
 
       {isSubmitting && (
-        <div className="text-center">
-          <img
-            src="https://i.gifer.com/ZZ5H.gif"
-            alt="Loading..."
-            className="w-12 mx-auto mb-2"
-          />
-          <p className="text-gray-600 italic transition-opacity duration-300">
-            {loadingMessages[loadingMsgIndex]}
-          </p>
+        <div className="text-center mb-10">
+          <p className="text-green-800 font-bold text-lg mb-3 animate-pulse">✨ Please wait while we pick the best for you...</p>
+          <p className="text-base text-gray-700 font-medium mb-4">💡 Here's some trivia while we analyze:</p>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={loadingMsgIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.6 }}
+              className="mx-auto text-lg font-bold text-green-900 px-6 py-4 bg-green-100 border border-green-300 rounded-lg shadow-lg max-w-2xl"
+            >
+              {triviaFacts[loadingMsgIndex]}
+            </motion.div>
+          </AnimatePresence>
         </div>
       )}
 
@@ -135,7 +117,7 @@ const HRDashboard = () => {
               <div key={resume.resumeId} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
                 <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
                   <h3 className="text-lg font-semibold text-gray-800">
-                    Candidate #{index + 1} - {resume.email}
+                    Candidate #{index + 1} – {resume.email}
                   </h3>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">Overall Score:</span>
@@ -178,7 +160,7 @@ const HRDashboard = () => {
 
                 <div className="text-right">
                   <a
-                    href={resume.resumeUrl}
+                    href={resume.driveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium"

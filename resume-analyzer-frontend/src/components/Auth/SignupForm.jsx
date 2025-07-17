@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
@@ -25,46 +26,64 @@ const SignupForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-green-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-green-800 text-center mb-2">Create your account</h2>
+    <div className="min-h-screen bg-gradient-to-tr from-lime-100 to-green-50 flex items-center justify-center px-4 py-12">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full max-w-md bg-white/80 backdrop-blur-md border border-white/30 shadow-2xl rounded-2xl px-8 py-10"
+      >
+        <h2 className="text-3xl font-extrabold text-green-900 text-center mb-2">
+          Create your account
+        </h2>
         <p className="text-sm text-gray-600 text-center mb-6">
-          Join ResumeChecker and optimize your career
+          Join <span className="font-semibold text-green-700">ResumeChecker</span> and optimize your career.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Full Name"
-            required
-            value={formData.fullName}
-            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            className="w-full px-4 py-3 border border-green-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-          <input
-            type="email"
-            placeholder="Email address"
-            required
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full px-4 py-3 border border-green-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            className="w-full px-4 py-3 border border-green-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <input
+              type="text"
+              placeholder="Your full name"
+              required
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              className="w-full px-4 py-3 border border-green-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input
+              type="email"
+              placeholder="example@domain.com"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-4 py-3 border border-green-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              required
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="w-full px-4 py-3 border border-green-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
+          </div>
 
           <button
             type="submit"
             disabled={isSigningUp}
-            className={`w-full py-3 text-white font-bold rounded-md transition ${
+            className={`w-full py-3 text-white font-semibold rounded-lg transition-all duration-300 ${
               isSigningUp
                 ? 'bg-green-300 cursor-not-allowed'
-                : 'bg-green-600 hover:bg-green-700'
+                : 'bg-green-700 hover:bg-green-800 shadow-md'
             }`}
           >
             {isSigningUp ? 'Creating account...' : 'Sign Up'}
@@ -77,7 +96,7 @@ const SignupForm = () => {
             </Link>
           </p>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };
