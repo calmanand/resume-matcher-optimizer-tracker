@@ -69,7 +69,7 @@ def generate_feedback(resume_text, analysis_results):
         elif resume_exp < jd_fields["experience"]:
             field_errors.append(f"Experience below requirement: JD expects {jd_fields['experience']} years, but only {resume_exp} years were found.")
 
-    # Add all strict field error messages if any
+    # Add all strict field error messages if there is any
     if field_errors:
         feedback.append("STRICT VIOLATIONS:")
         feedback.extend(field_errors)
