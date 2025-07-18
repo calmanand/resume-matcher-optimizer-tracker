@@ -32,6 +32,7 @@ A comprehensive resume analysis and matching system that helps HR professionals 
 - **Axios** - HTTP client for API calls
 - **React Hot Toast** - User notifications
 - **Zustand** - State management
+- **Tailwind CSS v-3"-for frontend appearance 
 
 ## Quick Start
 
