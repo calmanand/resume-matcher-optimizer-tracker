@@ -11,3 +11,7 @@ scikit-learn
 cloudinary
 requests
 python-multipart
+sentence-transformers
+langchain-google-genai
+langchain-community
+google-generativeai
