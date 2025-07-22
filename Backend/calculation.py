@@ -14,7 +14,8 @@ except OSError:
     nlp = None
 
 # Load BERT model
-bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+bert_model = SentenceTransformer('paraphrase-albert-small-v2')
+
 
 # Extract text from PDF URL
 def extract_text_from_url(pdf_url):
