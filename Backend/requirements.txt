@@ -11,3 +11,4 @@ scikit-learn
 cloudinary
 requests
 python-multipart
+sentence-transformers
